@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# A bash script to update a Cloudflare DNS A record with the external IP of the source machine
+# Used to provide DDNS service for my home
+# Needs the DNS record pre-creating on Cloudflare
+
+# Proxy - uncomment and provide details if using a proxy
+#export https_proxy=http://<proxyuser>:<proxypassword>@<proxyip>:<proxyport>
+tz=$(date +"%T")
+log=/tmp/update_ip_all.log
+# Cloudflare zone is the zone which holds the record
+zone=foitong.xyz
+# dnsrecord is the A record which will be updated
+dnsrecord=("emby.foitong.xyz" "plex.foitong.xyz" "plexsv2.foitong.xyz" "qbit.foitong.xyz" "tautulli.foitong.xyz" "netdata.foitong.xyz" "portainer.foitong.xyz" "ombi.foitong.xyz" "radarr.foitong.xyz" "radarr4k.foitong.xyz" "sonarr.foitong.xyz" "sonarr4k.foitong.xyz" "jackett.foitong.xyz" "apps.foitong.xyz" "newsletter.foitong.xyz")
+
+## Cloudflare authentication details
+## keep these private
+cloudflare_auth_email=alief.server1@gmail.com
+cloudflare_auth_key=47ea4a9ee9c609d2438ba941d152d6026e9b4
+
+for i in "${dnsrecord[@]}"
+do
+# Get the current external IP address
+ip=$(curl -s -X GET https://checkip.amazonaws.com)
+
+echo "$tz Current IP is $ip" >>$log
+
+if host $i 1.1.1.1 | grep "has address" | grep "$ip"; then
+  echo "$i is currently set to $ip; no changes needed" >>$log
+  exit
+fi
+
+# if here, the dns record needs updating
+
+# get the zone id for the requested zone
+zoneid=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$zone&status=active" \
+  -H "X-Auth-Email: $cloudflare_auth_email" \
+  -H "X-Auth-Key: $cloudflare_auth_key" \
+  -H "Content-Type: application/json" | jq -r '{"result"}[] | .[0] | .id')
+
+echo "Zoneid for $zone is $zoneid" >>$log
+
+# get the dns record id
+dnsrecordid=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?type=A&name=$i" \
+  -H "X-Auth-Email: $cloudflare_auth_email" \
+  -H "X-Auth-Key: $cloudflare_auth_key" \
+  -H "Content-Type: application/json" | jq -r '{"result"}[] | .[0] | .id')
+
+echo "DNSrecordid for $i is $dnsrecordid" >>$log
+
+# update the record
+curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records/$dnsrecordid" \
+  -H "X-Auth-Email: $cloudflare_auth_email" \
+  -H "X-Auth-Key: $cloudflare_auth_key" \
+  -H "Content-Type: application/json" \
+  --data "{\"type\":\"A\",\"name\":\"$i\",\"content\":\"$ip\",\"ttl\":1,\"proxied\":true}" | jq
+done
+

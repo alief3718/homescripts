@@ -1,0 +1,15 @@
+[Unit]
+Description=gmedia mergerfs mount
+Requires=rclone.service mnt-storage.mount
+After=rclone.service mnt-storage.mount
+RequiresMountsFor=/mnt/storage/local
+RequiresMountsFor=/mnt/storage/gdrive
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/mergerfs /mnt/storage/local:/mnt/storage/gdrive /mnt/storage/gmedia -o rw,use_ino,allow_other,func.getattr=newest,category.action=all,category.create=ff,cache.files=auto-full
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

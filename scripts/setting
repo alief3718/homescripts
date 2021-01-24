@@ -1,0 +1,15 @@
+echo -e "${Green}<--- Installing Config, Service, Other... --->${Font}"
+cp -pf /etc/samba/smb.conf /etc/samba/smb.conf.bak
+rm -rf /etc/samba/smb.conf
+cp /mnt/storage/github/homescripts/etc/smb.conf /etc/samba/
+#cp -pf /etc/vsftpd.conf /etc/vsftpd.conf.bak
+#cp /mnt/storage/github/homescripts/etc/vsftpd.conf /etc/
+cp /mnt/storage/github//homescripts/systemd/rclone.service /etc/systemd/system
+cp /mnt/storage/github//homescripts/systemd/gmedia.service /etc/systemd/system
+cp /mnt/storage/github//homescripts/systemd/qbit.service /etc/systemd/system
+#cp /mnt/storage/github//homescripts/systemd/caddy.service /etc/systemd/system
+chown root:root /etc/systemd/system/rclone.service /etc/systemd/system/gmedia.service /etc/systemd/system/qbit.service
+#systemctl enable --now rclone gmedia qbit caddy
+systemctl restart vsftpd smbd
+rm -rf /tmp/*
+echo -e "${Green}<--- Complete Config, Service, Other... Install --->${Font}"

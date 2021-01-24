@@ -1,0 +1,13 @@
+[Unit]
+Description=qBittorrent Daemon Service
+Requires=gmedia.service
+Wants=gmedia.service
+After=network.target local-fs.target gmedia.service
+BindsTo=mnt.mount
+
+[Service]
+ExecStart=/usr/local/bin/qbittorrent-nox --profile=/mnt/config/qbit
+TimeoutStopSec=infinity
+
+[Install]
+WantedBy=multi-user.target

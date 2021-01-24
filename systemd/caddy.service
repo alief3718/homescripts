@@ -1,0 +1,25 @@
+[Unit]
+Description=Caddy HTTP/2 web server
+Documentation=https://caddyserver.com/docs
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=on-abnormal
+
+; Letsencrypt-issued certificates will be written to this directory.
+Environment=CADDYPATH=/mnt/config/caddy_v1/.caddy
+Environment=CLOUDFLARE_API_KEY=47ea4a9ee9c609d2438ba941d152d6026e9b4
+Environment=CLOUDFLARE_EMAIL=alief.server1@gmail.com
+
+; Always set "-root" to something safe in case it gets forgotten in the Caddyfile.
+ExecStart=/usr/local/bin/caddy -log stdout -agree=true -conf=/mnt/config/caddy_v1/Caddyfile -email alief.server1@gmail.com
+ExecReload=/bin/kill -USR1 $MAINPID
+
+; Use graceful shutdown with a reasonable timeout
+KillMode=mixed
+KillSignal=SIGQUIT
+TimeoutStopSec=5s
+
+[Install]
+WantedBy=multi-user.target

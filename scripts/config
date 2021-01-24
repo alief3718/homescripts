@@ -1,0 +1,27 @@
+sudo cp -pf /etc/samba/smb.conf /etc/samba/smb.conf.bak
+rm -rf /etc/samba/smb.conf
+wget -P /etc/samba/ https://raw.githubusercontent.com/alief3718/homescripts/master/etc/smb.conf
+sudo cp -pf /etc/vsftpd.conf /etc/vsftpd.conf.bak
+rm -rf /etc/vsftpd.conf
+wget -P /etc/ https://raw.githubusercontent.com/alief3718/homescripts/master/etc/vsftpd.conf
+wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/gmedia.service
+wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/qbit.service
+wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/radarr.service
+wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/rclone1.service
+wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/rclone2.service
+wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/sonarr.service
+wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/jackett.service
+systemctl start rclone1
+systemctl start rclone2
+systemctl start gmedia
+systemctl start qbit
+systemctl start radarr
+systemctl start sonarr
+systemctl start jackett
+systemctl enable rclone1
+systemctl enable rclone2
+systemctl enable gmedia
+systemctl enable qbit
+systemctl enable radarr
+systemctl enable sonarr
+systemctl enable jackett

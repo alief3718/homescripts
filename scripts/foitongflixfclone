@@ -1,0 +1,60 @@
+#!/bin/bash
+#!/bin/bash
+Green="\033[32m"
+Font="\033[0m"
+Red="\033[31m"
+
+copy() {
+echo -e "${Green}<--- Copying... --->${Font}"
+screen -dmS FoitongFlix fclone copy /mnt/storage/local/foitong encrypt_embyplex: --config="/mnt/rclone/fclone/fclone.conf" --order-by=size,mixed,80 --size-only --transfers=4 --checkers=8 --timeout=5m --filter-from="/mnt/storage/config/rclone/filter-upload" --user-agent=FoitongFlix -vP --log-file="/tmp/FoitongFlix.log"
+sleep 5s
+main
+}
+
+move() {
+echo -e "${Green}<--- Moving... --->${Font}"
+screen -dmS FoitongFlix fclone move /mnt/storage/local/foitong encrypt_embyplex: --config="/mnt/rclone/fclone/fclone.conf" --order-by=size,mixed,80 --size-only --transfers=4 --checkers=8 --timeout=5m --filter-from="/mnt/storage/config/rclone/filter-upload" --delete-empty-src-dirs --user-agent=FoitongFlix -vP --log-file="/tmp/FoitongFlix.log"
+sleep 5s
+main
+}
+
+view_logs() {
+screen -r FoitongFlix
+}
+
+main(){
+root_need
+ovz_no
+clear
+echo -e "${Green}######################################################################${Font}"
+echo -e "${Green}    Welcome Script Fclone Backup Google Drive By FoitongFlix${Font}"
+echo -e "${Green}######################################################################${Font}"
+echo -e "${Green}1. Copy${Font}"
+echo -e "${Green}2. Move${Font}"
+echo -e "${Green}3. View Logs${Font}"
+echo -e "${Green}4. Exit${Font}"
+echo -e "${Green}######################################################################${Font}"
+read -p "Please Enter A Number [1-4]:" num
+case "$num" in
+    1)
+    copy
+    ;;
+    2)
+    move
+    ;;
+    3)
+    view_logs
+    ;;
+    4)
+    exit 1
+    ;;
+    *)
+    clear
+    echo -e "${Green}Please Enter The Correct Number [1-4]${Font}"
+    sleep 2s
+    main
+    ;;
+    esac
+}
+main
+

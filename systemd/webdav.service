@@ -1,0 +1,26 @@
+[Unit]
+Description=Webdav Service
+Requires=gmedia.service
+Wants=gmedia.service
+After=network.target local-fs.target gmedia.service
+
+[Service]
+Type=simple
+Environment=RCLONE_CONFIG=/mnt/config/rclone/rclone.conf
+
+ExecStart=/usr/bin/rclone serve webdav /mnt/gmedia \
+--addr 127.0.0.1:5859 \
+--dir-cache-time 1000h \
+--log-level INFO \
+--log-file /tmp/webdav.log \
+--poll-interval 15s \
+--timeout 1h \
+--user-agent aliefapp \
+--user alief \
+--pass **3718 \
+--vfs-read-chunk-size 32M
+
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

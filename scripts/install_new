@@ -1,0 +1,84 @@
+#!/bin/bash
+sudo apt-get install -y samba vsftpd
+apt install jq -y
+curl https://rclone.org/install.sh | sudo bash -s beta
+echo "user_allow_other" >> /etc/fuse.conf
+cd /tmp
+wget https://github.com/trapexit/mergerfs/releases/download/2.31.0/mergerfs_2.31.0.ubuntu-focal_amd64.deb
+dpkg -i *.deb
+rm -rf *.deb
+
+#apt-get install libcurl4-openssl-dev bzip2 mono-devel -y
+#apt install gnupg ca-certificates
+#apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+#echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+#apt update -y
+#apt install mono-devel
+#cd /tmp
+#wget https://mediaarea.net/repo/deb/repo-mediaarea_1.0-12_all.deb 
+#dpkg -i *.deb 
+#apt-get update -y
+#rm -rf *.deb
+
+#cd /tmp
+#wget https://github.com/MediaBrowser/Emby.Releases/releases/download/4.5.0.10/emby-server-deb_4.5.0.10_amd64.deb
+#dpkg -i *.deb
+#rm -rf *.deb
+
+sudo apt install docker.io -y
+sudo systemctl enable --now docker
+sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+apt-get install build-essential pkg-config automake libtool git zlib1g-dev -y 
+apt-get install libboost-dev libboost-system-dev libboost-chrono-dev libboost-random-dev libssl-dev libgeoip-dev -y 
+apt-get install qtbase5-dev qttools5-dev-tools libqt5svg5-dev -y
+mkdir -p /tmp/libtorrent
+cd /tmp/libtorrent
+curl -sSL https://github.com/arvidn/libtorrent/archive/libtorrent-1.2.10.tar.gz | tar xz --strip 1
+./autotool.sh
+./configure --disable-debug --disable-gui --enable-encryption CXXFLAGS="-std=c++14"
+make clean && make -j$(nproc)
+sudo make install
+#mkdir -p /tmp/qBittorrent
+#cd /tmp/qBittorrent
+#curl -sSL https://github.com/qbittorrent/qBittorrent/archive/release-4.2.5.tar.gz | tar xz --strip 1
+cd /tmp
+git clone https://github.com/qbittorrent/qBittorrent.git
+cd /tmp/qBittorrent
+sed -i 's|"qB"|"uT"|' /tmp/qBittorrent/src/base/bittorrent/session.cpp 
+sed -i 's|"qBittorrent/" QBT_VERSION_2|"uTorrent/1610"|' /tmp/qBittorrent/src/base/bittorrent/session.cpp
+./configure CXXFLAGS="-std=c++14" --disable-gui
+make -j$(nproc)
+sudo make install
+ldconfig
+export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
+
+sudo cp -pf /etc/samba/smb.conf /etc/samba/smb.conf.bak
+rm -rf /etc/samba/smb.conf
+#wget -P /etc/samba/ https://raw.githubusercontent.com/alief3718/homescripts/master/etc/smb.conf
+cp /mnt/git/homescripts/etc/smb.conf  /etc/samba/
+sudo cp -pf /etc/vsftpd.conf /etc/vsftpd.conf.bak
+rm -rf /etc/vsftpd.conf
+cp /mnt/git/homescripts/etc/vsftpd.conf /etc/
+#wget -P /etc/ https://raw.githubusercontent.com/alief3718/homescripts/master/etc/vsftpd.conf
+#wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/rclone.service
+#wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/gmedia.service
+#wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/jackett.service
+#wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/radarr.service
+#wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/sonarr.service
+#wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/qbit.service
+#wget -P /etc/systemd/system/ https://raw.githubusercontent.com/alief3718/homescripts/master/systemd/caddy.service
+#cp /mnt/backup/caddy /usr/local/bin/
+cp /mnt/git/homescripts/systemd/rclone.service /etc/systemd/system/
+cp /mnt/git/homescripts/systemd/gmedia.service /etc/systemd/system/
+cp /mnt/git/homescripts/systemd/qbit.service /etc/systemd/system/
+#cp /mnt/git/homescripts/systemd/caddy.service /etc/systemd/system/
+cp /mnt/git/homescripts/systemd/webdav.service /etc/systemd/system/
+chown root:root /mnt/git/homescripts/systemd/rclone.service /mnt/git/homescripts/systemd/gmedia.service /mnt/git/homescripts/systemd/qbit.service /mnt/git/homescripts/systemd/caddy.service /mnt/git/homescripts/systemd/webdav.service
+systemctl enable --now rclone gmedia qbit caddy webdav
+systemctl restart vsftpd smbd
+rm -rf /tmp/*
+
+cd /mnt/git/homescripts/scripts
+docker-compose up -d

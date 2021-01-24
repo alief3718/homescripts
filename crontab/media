@@ -1,0 +1,17 @@
+
+#!/bin/bash
+apt-get update && apt-get upgrade -y
+apt-get autoremove -y
+curl https://rclone.org/install.sh | sudo bash -s beta
+#docker stop emby plex
+#rm -rf /mnt/storage/config/plex/Library/'Application Support'/'Plex Media Server'/Cache/*
+#rm -rf /mnt/storage/config/plex/Library/'Application Support'/'Plex Media Server'/'Plug-in Support'/Caches/com.plex*/*
+#rm -rf /mnt/storage/config/plex/Library/'Application Support'/'Plex Media Server'/'Plug-in Support'/Caches/org*/*
+#rm -rf /mnt/storage/config/plex/Library/'Application Support'/'Plex Media Server'/'Plug-in Support'/Caches/tv*/*
+#docker start emby plex
+cp /etc/systemd/system/rclone.service /mnt/storage/github/homescripts/systemd/
+#cp /etc/systemd/system/gmedia.service /mnt/storage/github/homescripts/systemd/
+/mnt/storage/github/homescripts/scripts/homescripts
+docker image prune << EOF
+y
+EOF

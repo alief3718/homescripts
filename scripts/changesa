@@ -1,0 +1,28 @@
+#!/bin/bash
+
+###config###
+remote='Main_team_1:'
+rcport='5572'
+pathsa='/mnt/json/alief/'
+satotal='600'
+
+####CODE####
+lastsa=$(rclone --config /mnt/config/rclone/rclone.conf backend get $remote: -o service_account_file)
+echo "$lastsa" > /mnt/json/lastsa.json
+lastsa=$(jq '.service_account_file' /mnt/json/lastsa.json | sed -r "s/.+\/(.+)\..+/\1/")
+echo $lastsa
+
+if [ '""' == "$lastsa" ]
+then
+newsa="1"
+else
+if [ $lastsa -eq $satotal ]
+then
+newsa="1"
+else
+newsa=$((lastsa+1))
+fi
+fi
+#echo $newsa
+
+rclone rc --rc-addr=localhost:$rcport backend/command command=set fs=$remote: -o service_account_file=$pathsa$newsa.json

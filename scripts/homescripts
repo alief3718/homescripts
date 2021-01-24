@@ -1,0 +1,5 @@
+#!/bin/bash
+cd /mnt/storage/github/homescripts/scripts/homescripts
+git add .
+git commit -m 'Update Homescripts'
+git push https://github.com/alief3718/homescripts.git

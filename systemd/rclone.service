@@ -1,0 +1,43 @@
+[Unit]
+Description=RClone Service
+Wants=network-online.target mnt-storage.mount
+After=network-online.target mnt-storage.mount
+
+[Service]
+Type=notify
+EnvironmentFile=/mnt/appdata/rclone/rclone.env
+KillMode=none
+RestartSec=5
+ExecStart=/usr/bin/rclone mount "${REMOTE_NAME1}" "${MOUNT_DIR1}" \
+--allow-other \
+--config "${RCLONE_CONF}" \
+--dir-cache-time "${DIR_CACHE_TIME}" \
+--log-level "${LOG_LEVEL}" \
+--log-file "${LOG_FILE}" \
+--poll-interval "${POLL_INTERVAL}" \
+--umask "${UMASK}" \
+--uid "${UID}" \
+--gid "${GID}" \
+--user-agent "${USER_AGENT}" \
+--rc \
+--rc-serve \
+--rc-no-auth \
+--rc-addr "${RC_ADDR}" \
+--buffer-size "${BUFFER_SIZE}" \
+--vfs-read-chunk-size-limit "${VFS_READ_CHUNK_SIZE_LIMIT}" \
+--vfs-read-chunk-size "${VFS_READ_CHUNK_SIZE}"
+#--vfs-cache-mode "${VFS_CACHE_MODE}" \
+#--vfs-cache-max-size "${VFS_CACHE_MAX_SIZE}" \
+#--vfs-cache-max-age "${VFS_CACHE_MAX_AGE}" \
+#--bwlimit-file "${BWLIMIT_FILE}"
+
+#ExecStartPost=/usr/bin/rclone rc mount/mount fs="${REMOTE_NAME2}" mountPoint="${MOUNT_DIR2}" mountType=mount
+#ExecStartPost=/usr/bin/rclone rc mount/mount fs="${REMOTE_NAME3}" mountPoint="${MOUNT_DIR3}" mountType=mount
+#ExecStartPost=/usr/bin/rclone rc mount/mount fs="${REMOTE_NAME4}" mountPoint="${MOUNT_DIR4}" mountType=mount
+ExecStartPost=/usr/bin/rclone rc vfs/refresh recursive=true --rc-addr "${RC_ADDR}" _async=true
+ExecStop=/usr/bin/rclone rc mount/unmountall
+ExecStop=/bin/fusermount -uz "${MOUNT_DIR1}"
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

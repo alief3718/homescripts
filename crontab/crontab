@@ -1,0 +1,6 @@
+
+#List Crontab
+*/5 * * * * /mnt/appdata/cloudflare/cloudflare_update_ip_all
+*/5 * * * * /mnt/appdata/cloudflare/cloudflare_update_ip_ssh
+0 3 * * * */5 * * * * /mnt/appdata/cloudflare/cloudflare_update_ip_all
+*/5 * * * * /mnt/appdata/cloudflare/media

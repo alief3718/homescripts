@@ -1,0 +1,41 @@
+[Unit]
+Description=RClone Service
+Wants=network-online.target
+After=network-online.target
+BindsTo=mnt.mount
+
+[Service]
+Type=notify
+Environment=RCLONE_CONFIG=/mnt/config/rclone/rclone.conf
+KillMode=none
+RestartSec=5
+ExecStart=/usr/bin/rclone mount encrypt_team_1: /mnt/stuff/gdrive/A_Avengers \
+--allow-other \
+--dir-cache-time 1000h \
+--log-level INFO \
+--log-file /tmp/rclone_mount.log \
+--poll-interval 15s \
+--timeout 1h \
+--uid 1000 \
+--gid 1000 \
+--dir-perms 0777 \
+--file-perms 0777 \
+--umask 0000 \
+--user-agent aliefapp \
+--rc \
+--rc-serve \
+--rc-no-auth \
+--rc-addr 127.0.0.1:5572 \
+--vfs-read-chunk-size 32M
+ExecStop=/bin/fusermount -uz /mnt/stuff/gdrive/A_Avengers
+ExecStop=/bin/fusermount -uz /mnt/stuff/gdrive/A_Main_team_2
+ExecStop=/bin/fusermount -uz /mnt/stuff/gdrive/A_Main_team_3
+ExecStop=/bin/fusermount -uz /mnt/stuff/gdrive/A_Win1
+ExecStartPost=/usr/bin/rclone rc mount/mount fs=Main_team_2: mountPoint=/mnt/stuff/gdrive/A_Main_team_2 mountType=mount
+ExecStartPost=/usr/bin/rclone rc mount/mount fs=Main_team_3: mountPoint=/mnt/stuff/gdrive/A_Main_team_3 mountType=mount
+ExecStartPost=/usr/bin/rclone rc mount/mount fs=win1: mountPoint=/mnt/stuff/gdrive/A_Win1 mountType=mount
+ExecStartPost=/usr/bin/rclone rc vfs/refresh recursive=true --rc-addr 127.0.0.1:5572 _async=true 
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

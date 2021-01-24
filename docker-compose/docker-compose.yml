@@ -1,0 +1,377 @@
+version: "3"
+services:
+  jackett:
+    image: linuxserver/jackett:development
+    container_name: jackett
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"    
+    environment:
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "TZ=${TIMEZONE}"
+    volumes:
+      - "${CONFIG_DIR}/jackett:/config"
+      - "${MEDIA_DIR}:/data/gmedia"
+    ports:
+      - "${JACKETT_PORT}:9117"
+    restart: unless-stopped
+
+  sonarr:
+    image: linuxserver/sonarr:preview
+    container_name: sonarr
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "TZ=${TIMEZONE}"
+      - "UMASK_SET=${UMASK_SET}"
+    volumes:
+      - "${CONFIG_DIR}/sonarr:/config"
+      - "${MEDIA_DIR}:/data/gmedia"
+    ports:
+      - "${SONARR_PORT}:8989"
+    restart: unless-stopped
+
+  sonarr4k:
+    image: linuxserver/sonarr:preview
+    container_name: sonarr4k
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "TZ=${TIMEZONE}"
+      - "UMASK_SET=${UMASK_SET}"
+    volumes:
+      - "${CONFIG_DIR}/sonarr4k:/config"
+      - "${MEDIA_DIR}:/data/gmedia"
+    ports:
+      - "${SONARR4K_PORT}:8989"
+    restart: unless-stopped
+
+  radarr:
+    image: linuxserver/radarr:preview
+    container_name: radarr
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "TZ=${TIMEZONE}"
+      - "UMASK_SET=${UMASK_SET}"
+    volumes:
+      - "${CONFIG_DIR}/radarr:/config"
+      - "${MEDIA_DIR}:/data/gmedia"
+    ports:
+      - "${RADARR_PORT}:7878"
+    restart: unless-stopped
+
+  radarr4k:
+    image: linuxserver/radarr:preview
+    container_name: radarr4k
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "TZ=${TIMEZONE}"
+      - "UMASK_SET=${UMASK_SET}"
+    volumes:
+      - "${CONFIG_DIR}/radarr4k:/config"
+      - "${MEDIA_DIR}:/data/gmedia"
+    ports:
+      - "${RADARR4K_PORT}:7878"
+    restart: unless-stopped
+
+  emby:
+    image: emby/embyserver:beta
+    container_name: emby
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "GIDLIST=${GIDLIST}"
+      - "UMASK_SET=${UMASK_SET}"
+      - "TZ=${TIMEZONE}"
+#     - NVIDIA_VISIBLE_DEVICES=all
+#     - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      - "${CONFIG_DIR}/emby:/config"
+      - "${MEDIA_DIR}:/data/media:ro"
+      - "${TRANSCODE_DIR}:/transcode"
+#    ports:
+#      - "${EMBY_PORT}:8096"   
+#      - 8920:8920
+    devices:
+      - /dev/dri:/dev/dri
+    network_mode: host
+#    runtime: nvidia
+    restart: unless-stopped
+
+  netdata:
+    image: netdata/netdata:latest
+    container_name: netdata
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    ports:
+      - "${NETDATA_PORT}:19999"
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+
+  organizr:
+    image: organizr/organizr:latest
+    container_name: organizr
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - fpm=true
+      - branch=v2-develop
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "TZ=${TIMEZONE}"
+    volumes:
+      - "${CONFIG_DIR}/organizr:/config"
+    ports:
+      - "${ORGANIZR_PORT}:80"
+    restart: unless-stopped
+
+  portainer:
+    image: portainer/portainer-ce:alpine
+    container_name: portainer
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "${CONFIG_DIR}/portainer:/data" 
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "${PORTAINER_PORT}:9000"
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower:latest-dev
+    container_name: watchtower
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: --label-enable --cleanup
+    restart: unless-stopped
+
+#  nextcloud:
+#    container_name: nextcloud
+#    labels:
+#      - "com.centurylinklabs.watchtower.enable=true"
+#    restart: unless-stopped
+#    image: nextcloud:latest
+#    volumes:
+#      - "${CONFIG_DIR}/nextcloud/html:/var/www/html"
+#      - "${CONFIG_DIR}/nextcloud/config:/var/www/html/config"
+#      - "${CONFIG_DIR}/nextcloud/custom_apps:/var/www/html/custom_apps"
+#      - "${CONFIG_DIR}/nextcloud/data:/var/www/html/data"
+#      - "${CONFIG_DIR}/nextcloud/themes:/var/www/html/themes"
+#      - "${ETC_LOCALTIME}:/etc/localtime:ro"
+#    ports:
+#      - "${NEXTCLOUD_PORT}:80"
+#    depends_on:
+#      - nextcloud-db
+
+#  nextcloud-db:
+#    container_name: nextcloud-db
+#    labels:
+#      - "com.centurylinklabs.watchtower.enable=true"
+#    restart: unless-stopped
+#    image: mariadb:latest
+#    environment:
+#      MYSQL_ROOT_PASSWORD: root
+#      MYSQL_DATABASE: ncdb
+#      MYSQL_USER: nextcloud
+#      MYSQL_PASSWORD: nextcloud
+#    volumes:
+#      - "${CONFIG_DIR}/nextcloud-db:/var/lib/mysql"
+
+  plex:
+    image: plexinc/pms-docker:plexpass
+    container_name: plex
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - "TZ=${TIMEZONE}"
+      - VERSION=docker
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - GIDLIST=109
+      - "UMASK_SET=${UMASK_SET}"
+#      - NVIDIA_VISIBLE_DEVICES=all
+#      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      - "${CONFIG_DIR}/plex:/config"
+      - "${MEDIA_DIR}:/data/media:ro"
+      - "${TRANSCODE_DIR}:/transcode"
+    devices:
+     - /dev/dri:/dev/dri
+#    ports:
+#     - "${PLEX_PORT}:32400/tcp"
+#     - 3005:3005/tcp
+#     - 8324:8324/tcp
+#     - 32469:32469/tcp
+#     - 1900:1900/udp
+#     - 32410:32410/udp
+#     - 32412:32412/udp
+#     - 32413:32413/udp
+#     - 32414:32414/udp
+    network_mode: host
+#    runtime: nvidia
+    restart: unless-stopped
+
+#  plexsv2:
+#    image: plexinc/pms-docker:plexpass
+#    container_name: plexsv2
+#    labels:
+#      - "com.centurylinklabs.watchtower.enable=true"
+#    environment:
+#      - "TZ=${TIMEZONE}"
+#      - VERSION=docker
+#      - "PUID=${PUID}"
+#      - "PGID=${PGID}"
+#      - GIDLIST=109
+#      - "UMASK_SET=${UMASK_SET}"
+#    volumes:
+#      - "${CONFIG_DIR}/plexsv2:/config"
+#      - "${MEDIA_DIR}:/data/gmedia:ro"
+#      - "${TRANSCODE_DIR}:/transcode"
+#    devices:
+#     - /dev/dri:/dev/dri
+#    ports:
+#     - 34400:32400/tcp
+#     - 3006:3005/tcp
+#     - 8325:8324/tcp
+#     - 32470:32469/tcp
+#     - 1902:1900/udp
+#     - 32421:32410/udp
+#     - 32422:32412/udp
+#     - 32423:32413/udp
+#     - 32424:32414/udp
+#    restart: unless-stopped
+
+
+  tautulli:
+    image: tautulli/tautulli:nightly
+    container_name: tautulli
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "TZ=${TIMEZONE}"
+    volumes:
+      - "${CONFIG_DIR}/tautulli:/config"
+      - "${PLEX_LOG_DIR}:/plex_logs:ro"
+    ports:
+      - "${TAUTULLI_PORT}:8181"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "TZ=${TIMEZONE}"
+    volumes:
+      - "${NGINX_DIR1}:/etc/nginx/certs"
+      - "${NGINX_DIR2}:/etc/nginx/nginx.conf"
+      - "${NGINX_DIR3}:/etc/nginx/conf.d"
+      - "${NEWSLETTER_DIR}:/mnt/appdata/tautulli/newsletters"
+    ports:
+      - "${NGINX_PORT1}:80"
+      - "${NGINX_PORT2}:443"
+    depends_on:
+      - wireguard
+      - emby
+      - plex
+      - qbittorrent
+      - jackett
+      - radarr
+      - radarr4k
+      - sonarr
+      - sonarr4k
+      - tautulli
+      - ombi
+      - organizr
+      - portainer
+      - netdata
+    restart: unless-stopped
+
+  qbittorrent:
+    image: neunghaha28/qbittorrent:4.2.5
+    container_name: qbit
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+    ports:
+        - "${QBITTORRENT_PORT1}:8080"
+        - "${QBITTORRENT_PORT2}:6881"
+        - "${QBITTORRENT_PORT2}:6881/udp"
+    volumes:
+        - "${CONFIG_DIR}/qb:/data"
+        - "${MEDIA_DIR}/qb:/data/qb"
+    environment:
+        - "UID=${UID}"
+        - "GID=${GID}"
+    restart: unless-stopped
+
+  wireguard:
+    image: linuxserver/wireguard:latest
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "TZ=${TIMEZONE}"
+      - SERVERURL=${SERVERURL}
+      - SERVERPORT=${SERVERPORT}
+      - PEERS=${PEERS}
+      - PEERDNS=${PEERDNS}
+      - INTERNAL_SUBNET=${INTERNAL_SUBNET}
+      - ALLOWEDIPS=${ALLOWEDIPS}
+    volumes:
+      - "${CONFIG_DIR}/wireguard:/config"
+      - "${LIB_MOD_DIR}:/lib/modules"
+    ports:
+      - "${WIREGUARD_PORT}:51820/udp"
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped
+
+  ombi:
+    image: linuxserver/ombi:v4-preview
+    container_name: ombi
+    environment:
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "TZ=${TIMEZONE}"
+    volumes:
+      - "${CONFIG_DIR}/ombi:/config"
+    ports:
+      - "${OMBI_PORT}:3579"
+    restart: unless-stopped
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
+
+#docker-compose up -d --force-recreate

@@ -1,0 +1,84 @@
+#!/bin/bash
+#install samba,vsftpd,rclone,mergerfs
+sudo apt-get install -y samba vsftpd
+curl https://rclone.org/install.sh | sudo bash -s beta
+cd /tmp
+wget https://github.com/trapexit/mergerfs/releases/download/2.30.0/mergerfs_2.30.0.ubuntu-bionic_amd64.deb
+dpkg -i *.deb
+rm -rf *.deb
+
+#install docker,docker-compose
+cd /tmp
+wget https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/containerd.io_1.2.6-3_amd64.deb
+wget https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce-cli_19.03.9~3-0~ubuntu-bionic_amd64.deb
+wget https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_19.03.9~3-0~ubuntu-bionic_amd64.deb
+dpkg -i *.deb
+sudo curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+rm -rf /tmp/*
+
+#compile qbittorrent
+apt-get install build-essential pkg-config automake libtool git zlib1g-dev -y 
+apt-get install libboost-dev libboost-system-dev libboost-chrono-dev libboost-random-dev libssl-dev libgeoip-dev -y 
+apt-get install qtbase5-dev qttools5-dev-tools libqt5svg5-dev -y
+cd /tmp
+git clone https://github.com/arvidn/libtorrent.git
+cd libtorrent
+./autotool.sh
+./configure --disable-debug --disable-gui --enable-encryption CXXFLAGS="-std=c++14"
+make clean && make -j$(nproc)
+sudo make install
+mkdir -p /tmp/qBittorrent
+cd /tmp/qBittorrent
+curl -sSL https://github.com/qbittorrent/qBittorrent/archive/release-4.2.5.tar.gz | tar xz --strip 1
+sed -i 's|"qB"|"uT"|' /tmp/qBittorrent/src/base/bittorrent/session.cpp 
+sed -i 's|"qBittorrent/" QBT_VERSION_2|"uTorrent/1610"|' /tmp/qBittorrent/src/base/bittorrent/session.cpp
+./configure CXXFLAGS="-std=c++14" --disable-gui
+make -j$(nproc)
+sudo make install
+ldconfig
+export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
+
+#install caddy
+cp /mnt/backup/caddy /usr/local/bin/
+chown root:root /usr/local/bin/caddy
+chmod +x /usr/local/bin/caddy
+
+#load config samba,vsftpd and load service rclone,radarr,sonarr,gmedia,caddy,other...
+cp -pf /etc/samba/smb.conf /etc/samba/smb.conf.bak
+rm -rf /etc/samba/smb.conf
+cp /mnt/git/homescripts/etc/smb.conf /etc/samba/
+cp -pf /etc/vsftpd.conf /etc/vsftpd.conf.bak
+rm -rf /etc/vsftpd.conf
+cp /mnt/git/homescripts/etc/vsftpd.conf /etc/
+
+#load service rclone,radarr,sonarr,gmedia,caddy,other...
+cp /mnt/git/homescripts/systemd/rclone.service /etc/systemd/system/
+cp /mnt/git/homescripts/systemd/gmedia.service /etc/systemd/system/
+cp /mnt/git/homescripts/systemd/qbit.service /etc/systemd/system/
+cp /mnt/git/homescripts/systemd/webdav.service /etc/systemd/system/
+cp /mnt/git/homescripts/systemd/caddy.service /etc/systemd/system/
+chown root:root /etc/systemd/system/rclone.service /etc/systemd/system/gmedia.service /etc/systemd/system/qbit.service /etc/systemd/system/caddy.service /etc/systemd/system/webdav.service /mnt/git/homescripts/smb.conf /mnt/git/homescripts/vsftpd.conf
+systemctl enable --now rclone gmedia qbit webdav caddy
+systemctl restart vsftpd smbd
+rm -rf /tmp/*
+echo "user_allow_other" >> /etc/fuse.conf
+
+#install jq and update ip
+apt install jq -y
+/mnt/config/cloudflare/update_ip_all
+
+#install fclone
+cp /mnt/backup/fclone /usr/local/bin/
+chown root:root /usr/local/bin/fclone
+chmod +x /usr/local/bin/fclone
+
+#load image docker
+cd /mnt/git/homescripts/scripts
+docker-compose up -d
+docker ps
+
+#see status service
+systemctl status rclone gmedia qbit webdav caddy docker
+
+

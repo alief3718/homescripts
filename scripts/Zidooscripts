@@ -1,0 +1,113 @@
+UPDATE OPENWRT
+1.DOWNLOAD UDATE OPENWRT https://github.com/jjm2473/rtd1295-openwrt18-porting/releases/tag/z9s_2.0.0_full?fbclid=IwAR2DOU0zM6e_EnMpGSTdY1sFi1tqvnuYi08yIN9aOp5yc_sZ4yweR4Sscgc
+2.DOWNLOAD RESET OPENWRT https://github.com/jjm2473/rtd1295-openwrt18-porting/blob/master/reset_op.signed.zip
+3.UPDATE OPNWRT IN ZIDOO (BY FLASH DRIVE)
+4.RESET OPENWRT INZIDOO  (BY FLASH DRIVE)
+5.SET PASSWORD
+6.MOUNT FLASH DRIVE (sda1)
+----------------------------------------
+INSTALL RCLONE ZIDOO
+1.DOWNLOAD RCLONE
+2.COPY RCLONE.CONF >> TO FLASH DRIVE
+3.opkg update (UPDATE PSCKAGES OPENWRT  ZIDOO)
+4.opkg install nano fuse-utils (INSTALL FUSE)
+5.nano /etc/init.d/rclone (WRITE SCRIPTS) (5)
+6.chmod +x /etc/init.d/rclone
+7.mkdir -p (MAKE FOLDER FOR MOUNT POINT)
+8./etc/init.d/rclone start (START RCLONE MOUNT)
+9./etc/init.d/rclone enable (ENABLE RCLONE MOUNT)
+10.EDIT TEMPLATE NETWORK SHARE (10)
+11.REBOOT ZIDOO
+----------------------------------------------------
+(5)script zidoo mount
+
+#!/bin/sh /etc/rc.common
+START=99
+STOP=12
+
+exec >>/tmp/rclone.log 2>&1
+
+start() {
+/mnt/sda1/rclone/rclone mount encrypt_team_1: /mnt/rclone/A_Avengers \
+--config /mnt/sda1/rclone/rclone.conf \
+--allow-other \
+--dir-cache-time 1000h \
+--log-level INFO \
+--log-file /tmp/rclone_mount.log \
+--poll-interval 15s \
+--timeout 1h \
+--dir-perms 0777 \
+--file-perms 0777 \
+--umask 0000 \
+--user-agent neunghaha28app \
+--rc \
+--rc-serve \
+--rc-no-auth \
+--rc-addr 127.0.0.1:5572 \
+--buffer-size 32M \
+--max-read-ahead 128k \
+--vfs-read-chunk-size 32M \
+--vfs-read-chunk-size-limit 256M \
+--async-read=true &
+/mnt/sda1/rclone/rclone rc mount/mount fs=win1: mountPoint=/mnt/rclone/Win1 mountType=mount
+/mnt/sda1/rclone/rclone rc mount/mount fs=tdfn: mountPoint=/mnt/rclone/TDFN mountType=mount
+/mnt/sda1/rclone/rclone rc mount/mount fs=jiew_movie: mountPoint=/mnt/rclone/jiew_movie mountType=mount
+/mnt/sda1/rclone/rclone rc mount/mount fs=android: mountPoint=/mnt/rclone/Android mountType=mount
+}
+
+stop() {
+for i in $(mount | grep rclone | cut -d' ' -f 3); do fusermount -z -u $i ; done
+}
+
+-----------------------------------------------------------------------------------------
+(10) Templae Network Share
+
+[global]
+netbios name = |NAME|
+display charset = |CHARSET|
+# interfaces = |INTERFACES|
+server string = |DESCRIPTION|
+unix charset = |CHARSET|
+workgroup = |WORKGROUP|
+browseable = yes
+domain master = no
+encrypt passwords = true
+enable core files = no
+guest account = nobody
+guest ok = yes
+invalid users = root
+local master = no
+load printers = no
+map to guest = Bad User
+# max protocol = SMB2
+# min receivefile size = 16384
+null passwords = yes
+obey pam restrictions = yes
+os level = 20
+passdb backend = smbpasswd
+preferred master = no
+printable = no
+security = user
+smb encrypt = disabled
+smb passwd file = /etc/samba/smbpasswd
+# socket options = TCP_NODELAY IPTOS_LOWDELAY
+syslog = 2
+writeable = yes
+min receivefile size = 512
+use sendfile = true
+aio read size = 4096
+aio write size = 4096
+write cache size = 1024000
+read raw = yes
+write raw = yes
+getwd cache = yes
+oplocks = yes
+#max xmit = 65535
+max xmit = 131072
+dead time = 0
+large readwrite = yes
+
+[mnt]
+path = /mnt
+read only = no
+guest ok = yes
