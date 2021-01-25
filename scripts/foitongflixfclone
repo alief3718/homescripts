@@ -18,6 +18,13 @@ sleep 5s
 main
 }
 
+download() {
+echo -e "${Green}<--- Copying... --->${Font}"
+screen -dmS FoitongFlix fclone copy jiew_series: --drive-root-folder-id "1UDKgp0vK77JZ-yn7zwW5RjBbdAy4yEZa" /mnt/storage/media/foitong_hdd/test --config="/mnt/storage/appdata/fclone/fclone.conf" --order-by=size,mixed,80 --size-only --transfers=4 --checkers=8 --timeout=5m --filter-from="/mnt/storage/appdata/rclone/filter-download" --user-agent=FoitongFlix -vP --log-file="/tmp/FoitongFlix.log"
+sleep 5s
+main
+}
+
 view_logs() {
 screen -r FoitongFlix
 }
@@ -31,8 +38,9 @@ echo -e "${Green}    Welcome Script Fclone Backup Google Drive By FoitongFlix${F
 echo -e "${Green}######################################################################${Font}"
 echo -e "${Green}1. Copy${Font}"
 echo -e "${Green}2. Move${Font}"
-echo -e "${Green}3. View Logs${Font}"
-echo -e "${Green}4. Exit${Font}"
+echo -e "${Green}3. Download${Font}"
+echo -e "${Green}4. View Logs${Font}"
+echo -e "${Green}5. Exit${Font}"
 echo -e "${Green}######################################################################${Font}"
 read -p "Please Enter A Number [1-4]:" num
 case "$num" in
@@ -43,9 +51,11 @@ case "$num" in
     move
     ;;
     3)
-    view_logs
     ;;
     4)
+    Download
+    ;;
+    5)
     exit 1
     ;;
     *)
