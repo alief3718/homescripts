@@ -315,7 +315,7 @@ services:
     restart: unless-stopped
 
   qbittorrent:
-    image: neunghaha28/qbittorrent:4.2.5
+    image: neunghaha28/qbittorrent:4.3.3
     container_name: qbit
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
