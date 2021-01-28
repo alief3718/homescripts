@@ -100,6 +100,7 @@ services:
     volumes:
       - "${CONFIG_DIR}/emby:/config"
       - "${MEDIA_DIR}:/data/media:ro"
+      - "${CACHE_DIR}:/cache"
       - "${TRANSCODE_DIR}:/transcode"
 #    ports:
 #      - "${EMBY_PORT}:8096"   
