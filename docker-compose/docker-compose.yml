@@ -51,7 +51,7 @@ services:
     restart: unless-stopped
 
   radarr:
-    image: linuxserver/radarr:preview
+    image: linuxserver/radarr:nightly
     container_name: radarr
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
@@ -68,7 +68,7 @@ services:
     restart: unless-stopped
 
   radarr4k:
-    image: linuxserver/radarr:preview
+    image: linuxserver/radarr:nightly
     container_name: radarr4k
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
