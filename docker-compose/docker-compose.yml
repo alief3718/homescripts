@@ -302,7 +302,7 @@ services:
       - wireguard
       - emby
       - plex
-      - qbittorrent
+      - qbit
       - jackett
       - radarr
       - radarr4k
@@ -315,8 +315,8 @@ services:
       - netdata
     restart: unless-stopped
 
-  qbittorrent:
-    image: neunghaha28/qbittorrent:4.3.3
+  qbit:
+    image: neunghaha28/qbittorrent:4.2.5
     container_name: qbit
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
